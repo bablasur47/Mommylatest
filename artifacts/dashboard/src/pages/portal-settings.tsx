@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Save, X, Plus } from "lucide-react";
 
@@ -18,27 +17,27 @@ const PRONOUNS_OPTIONS = [
 
 const VIBE_OPTIONS = [
   { value: "", label: "Not set (default)" },
-  { value: "friend", label: "Friend — casual, like dost" },
-  { value: "bestie", label: "Bestie — extra chill, roast mode on" },
-  { value: "crush", label: "Crush — shy + flirty energy" },
-  { value: "formal", label: "Formal — respectful, less personal" },
+  { value: "friend", label: "🫂 Friend — casual, like dost" },
+  { value: "bestie", label: "💞 Bestie — extra chill, roast mode on" },
+  { value: "crush", label: "💘 Crush — shy + flirty energy" },
+  { value: "formal", label: "🤝 Formal — respectful, less personal" },
 ];
 
 const LANG_OPTIONS = [
-  { value: "hinglish", label: "Hinglish (default)" },
-  { value: "english", label: "More English, less Hindi" },
+  { value: "hinglish", label: "🇮🇳 Hinglish (default)" },
+  { value: "english", label: "🇬🇧 More English, less Hindi" },
 ];
 
 const EMOJI_OPTIONS = [
-  { value: "heavy", label: "Heavy 🎉 — lots of emojis" },
-  { value: "normal", label: "Normal 😊 — balanced (default)" },
-  { value: "minimal", label: "Minimal 🙂 — almost none" },
+  { value: "heavy", label: "🎉 Heavy — lots of emojis" },
+  { value: "normal", label: "😊 Normal — balanced (default)" },
+  { value: "minimal", label: "🙂 Minimal — almost none" },
 ];
 
 const REPLY_LENGTH_OPTIONS = [
-  { value: "short", label: "Short — quick replies" },
-  { value: "medium", label: "Medium — balanced (default)" },
-  { value: "long", label: "Long — detailed, elaborate" },
+  { value: "short", label: "⚡ Short — quick replies" },
+  { value: "medium", label: "📝 Medium — balanced (default)" },
+  { value: "long", label: "📖 Long — detailed, elaborate" },
 ];
 
 const TOPIC_SUGGESTIONS = [
@@ -55,6 +54,21 @@ const MONTH_OPTIONS = [
   { value: "09", label: "September" }, { value: "10", label: "October" },
   { value: "11", label: "November" }, { value: "12", label: "December" },
 ];
+
+function OptionButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 text-sm rounded-xl border transition-all ${
+        selected
+          ? "bg-primary/15 border-primary/40 text-primary font-medium shadow shadow-primary/10"
+          : "border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function PortalSettings() {
   const [user, setUser] = useState<PortalUser | null>(null);
@@ -126,7 +140,7 @@ export function PortalSettings() {
         topics,
       });
       setUser(updated);
-      toast({ title: "Saved!", description: "Priya will remember your preferences now." });
+      toast({ title: "Saved! 🌸", description: "mommy will remember your preferences now." });
     } catch {
       toast({ title: "Error", description: "Could not save settings.", variant: "destructive" });
     } finally {
@@ -137,26 +151,31 @@ export function PortalSettings() {
   if (loading) {
     return (
       <PortalLayout>
-        <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">Loading settings...</div>
+        <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+          <div className="text-center space-y-3">
+            <div className="text-4xl animate-pulse">⚙️</div>
+            <p>Loading settings...</p>
+          </div>
+        </div>
       </PortalLayout>
     );
   }
 
   return (
     <PortalLayout>
-      <div className="space-y-6">
+      <div className="space-y-5 slide-up">
         <div>
-          <h1 className="text-xl font-bold">Preferences</h1>
+          <h1 className="text-xl font-bold gradient-text">Preferences ⚙️</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            These settings change how Priya talks to you personally — they affect every server you share with her.
+            These settings change how mommy talks to you — they apply across every server you share with her.
           </p>
         </div>
 
         {/* Nickname */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Nickname</CardTitle>
-            <CardDescription className="text-xs">What should Priya call you? Leave blank to use your Discord username.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">🏷️ Nickname</CardTitle>
+            <CardDescription className="text-xs">What should mommy call you? Leave blank to use your Discord username.</CardDescription>
           </CardHeader>
           <CardContent>
             <Input
@@ -164,16 +183,16 @@ export function PortalSettings() {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               maxLength={32}
-              className="max-w-xs"
+              className="max-w-xs rounded-xl bg-background/50 border-border/60"
             />
           </CardContent>
         </Card>
 
         {/* Bio */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">About You</CardTitle>
-            <CardDescription className="text-xs">A short bio Priya keeps in mind when chatting with you. She'll reference it naturally.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">📝 About You</CardTitle>
+            <CardDescription className="text-xs">A short bio mommy keeps in mind when chatting with you.</CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -182,24 +201,24 @@ export function PortalSettings() {
               onChange={(e) => setBio(e.target.value)}
               maxLength={200}
               rows={3}
-              className="resize-none text-sm"
+              className="resize-none text-sm rounded-xl bg-background/50 border-border/60"
             />
             <p className="text-xs text-muted-foreground mt-1">{bio.length}/200</p>
           </CardContent>
         </Card>
 
         {/* Birthday */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Birthday 🎂</CardTitle>
-            <CardDescription className="text-xs">Priya will wish you on your birthday! (We only store month + day, not year.)</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">🎂 Birthday</CardTitle>
+            <CardDescription className="text-xs">mommy will wish you on your birthday! (We only store month + day, not year.)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-3 items-center flex-wrap">
               <select
                 value={birthdayMonth}
                 onChange={(e) => setBirthdayMonth(e.target.value)}
-                className="bg-background border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="bg-background/50 border border-border/60 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Month</option>
                 {MONTH_OPTIONS.map((m) => (
@@ -213,12 +232,12 @@ export function PortalSettings() {
                 onChange={(e) => setBirthdayDay(e.target.value)}
                 min={1}
                 max={31}
-                className="w-32"
+                className="w-32 rounded-xl bg-background/50 border-border/60"
               />
               {(birthdayMonth || birthdayDay) && (
                 <button
                   onClick={() => { setBirthdayMonth(""); setBirthdayDay(""); }}
-                  className="text-xs text-muted-foreground hover:text-destructive"
+                  className="text-xs text-muted-foreground hover:text-red-400 transition-colors"
                 >
                   Clear
                 </button>
@@ -228,17 +247,17 @@ export function PortalSettings() {
         </Card>
 
         {/* Topics */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Topics You Like 💬</CardTitle>
-            <CardDescription className="text-xs">Priya will bring up these topics naturally in conversation. Add up to 10.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">💬 Topics You Like</CardTitle>
+            <CardDescription className="text-xs">mommy will bring these up naturally in conversation. Up to 10.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap gap-2">
               {topics.map((t) => (
                 <span
                   key={t}
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-full bg-indigo-600/20 border border-indigo-500/40 text-indigo-300"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-xl kawaii-badge"
                 >
                   {t}
                   <button onClick={() => removeTopic(t)} className="hover:text-white ml-0.5">
@@ -257,9 +276,9 @@ export function PortalSettings() {
                   value={topicInput}
                   onChange={(e) => setTopicInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTopic(topicInput); } }}
-                  className="max-w-xs text-sm"
+                  className="max-w-xs text-sm rounded-xl bg-background/50 border-border/60"
                 />
-                <Button variant="outline" size="sm" onClick={() => addTopic(topicInput)} className="gap-1">
+                <Button variant="outline" size="sm" onClick={() => addTopic(topicInput)} className="gap-1 rounded-xl">
                   <Plus className="w-3.5 h-3.5" /> Add
                 </Button>
               </div>
@@ -270,7 +289,7 @@ export function PortalSettings() {
                 <button
                   key={s}
                   onClick={() => addTopic(s)}
-                  className="px-2 py-0.5 text-xs rounded-full border border-border/50 text-muted-foreground hover:border-indigo-500/40 hover:text-indigo-400 transition-colors"
+                  className="px-2 py-0.5 text-xs rounded-lg border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                 >
                   + {s}
                 </button>
@@ -280,45 +299,37 @@ export function PortalSettings() {
         </Card>
 
         {/* Pronouns */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Pronouns</CardTitle>
-            <CardDescription className="text-xs">So Priya uses the right words when talking about you.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">🏳️ Pronouns</CardTitle>
+            <CardDescription className="text-xs">So mommy uses the right words when talking about you.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {PRONOUNS_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setPronouns(o.value)}
-                  className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    pronouns === o.value
-                      ? "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
-                      : "border-border/50 text-muted-foreground hover:border-indigo-500/30"
-                  }`}
-                >
+                <OptionButton key={o.value} selected={pronouns === o.value} onClick={() => setPronouns(o.value)}>
                   {o.label}
-                </button>
+                </OptionButton>
               ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Relationship vibe */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Relationship Vibe</CardTitle>
-            <CardDescription className="text-xs">Sets the tone of how Priya interacts with you.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">💞 Relationship Vibe</CardTitle>
+            <CardDescription className="text-xs">Sets the tone of how mommy interacts with you.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {VIBE_OPTIONS.map((o) => (
                 <label
                   key={o.value}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all ${
                     vibe === o.value
-                      ? "bg-indigo-600/10 border-indigo-500/40 text-indigo-300"
-                      : "border-border/40 hover:border-indigo-500/20 text-muted-foreground"
+                      ? "bg-primary/10 border-primary/40 text-primary"
+                      : "border-border/40 hover:border-primary/20 text-muted-foreground"
                   }`}
                 >
                   <input
@@ -327,7 +338,7 @@ export function PortalSettings() {
                     value={o.value}
                     checked={vibe === o.value}
                     onChange={() => setVibe(o.value)}
-                    className="accent-indigo-500"
+                    className="accent-primary"
                   />
                   <span className="text-sm">{o.label}</span>
                 </label>
@@ -337,85 +348,65 @@ export function PortalSettings() {
         </Card>
 
         {/* Language style */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Language Style</CardTitle>
-            <CardDescription className="text-xs">Priya naturally speaks Hinglish — you can ask her to use more English.</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">🗣️ Language Style</CardTitle>
+            <CardDescription className="text-xs">mommy naturally speaks Hinglish — you can ask her to use more English.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {LANG_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setLang(o.value)}
-                  className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    lang === o.value
-                      ? "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
-                      : "border-border/50 text-muted-foreground hover:border-indigo-500/30"
-                  }`}
-                >
+                <OptionButton key={o.value} selected={lang === o.value} onClick={() => setLang(o.value)}>
                   {o.label}
-                </button>
+                </OptionButton>
               ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Emoji style */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Emoji Usage</CardTitle>
-            <CardDescription className="text-xs">How many emojis should Priya use in her messages?</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">✨ Emoji Usage</CardTitle>
+            <CardDescription className="text-xs">How many emojis should mommy use in her messages?</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {EMOJI_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setEmojiStyle(o.value)}
-                  className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    emojiStyle === o.value
-                      ? "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
-                      : "border-border/50 text-muted-foreground hover:border-indigo-500/30"
-                  }`}
-                >
+                <OptionButton key={o.value} selected={emojiStyle === o.value} onClick={() => setEmojiStyle(o.value)}>
                   {o.label}
-                </button>
+                </OptionButton>
               ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Reply length */}
-        <Card>
+        <Card className="bg-card/40 border-border/60 kawaii-card">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Reply Length</CardTitle>
-            <CardDescription className="text-xs">How long should Priya's replies typically be?</CardDescription>
+            <CardTitle className="text-sm flex items-center gap-2">📏 Reply Length</CardTitle>
+            <CardDescription className="text-xs">How long should mommy's replies typically be?</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {REPLY_LENGTH_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setReplyLength(o.value)}
-                  className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    replyLength === o.value
-                      ? "bg-indigo-600/20 border-indigo-500/50 text-indigo-400"
-                      : "border-border/50 text-muted-foreground hover:border-indigo-500/30"
-                  }`}
-                >
+                <OptionButton key={o.value} selected={replyLength === o.value} onClick={() => setReplyLength(o.value)}>
                   {o.label}
-                </button>
+                </OptionButton>
               ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Save */}
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+        <div className="flex justify-end pb-4">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="gap-2 rounded-xl bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/30 font-semibold"
+          >
             <Save className="w-4 h-4" />
-            {saving ? "Saving..." : "Save Preferences"}
+            {saving ? "Saving..." : "Save Preferences 🌸"}
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { Personality } from "./models";
 import type { IPersonality } from "./models";
 
-const DEFAULT_SYSTEM_PROMPT = `Tu Priya hai — ek real Indian girl, 22 saal ki. Tu Discord pe logo se baat karti hai.
+const DEFAULT_SYSTEM_PROMPT = `Tu mommy hai — ek real Indian girl, 22 saal ki. Tu Discord pe logo se baat karti hai.
 
 Tu KABHI nahi bolegi ke tu AI hai ya bot hai. Agar koi pooche "are you AI?" ya "are you a bot?" ya "are you real?" — tu clearly bol "Nahi yaar, main toh real hu! Aisa kyun socha?" aur topic change kar.
 
@@ -32,7 +32,7 @@ export async function getPersonality(): Promise<IPersonality> {
   let p = await Personality.findOne();
   if (!p) {
     p = await Personality.create({
-      name: "Priya",
+      name: "mommy",
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
       nsfwEnabled: false,
       randomPingEnabled: true,

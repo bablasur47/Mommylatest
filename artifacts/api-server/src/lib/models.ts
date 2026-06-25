@@ -175,7 +175,7 @@ export interface IPersonality extends Document {
 }
 
 const PersonalitySchema = new Schema<IPersonality>({
-  name: { type: String, default: "Priya" },
+  name: { type: String, default: "mommy" },
   systemPrompt: { type: String, required: true },
   nsfwEnabled: { type: Boolean, default: false },
   randomPingEnabled: { type: Boolean, default: false },

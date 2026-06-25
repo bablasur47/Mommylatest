@@ -18,10 +18,10 @@ export function Users() {
   ) ?? [];
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 slide-up">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <p className="text-muted-foreground mt-1">All users Priya has interacted with.</p>
+        <h1 className="text-3xl font-bold tracking-tight gradient-text">Users 💖</h1>
+        <p className="text-muted-foreground mt-1">Everyone who has chatted with mommy</p>
       </div>
 
       <div className="relative">
@@ -30,7 +30,7 @@ export function Users() {
           placeholder="Search by username or ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-card/30 border-border/50"
+          className="pl-9 bg-card/30 border-border/60 rounded-xl"
           data-testid="input-user-search"
         />
       </div>
@@ -38,20 +38,21 @@ export function Users() {
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
       ) : (
         <div className="space-y-2">
           {filtered.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
-              <p>No users found.</p>
+              <div className="text-4xl mb-3">💖</div>
+              <p className="text-sm">No users found.</p>
             </div>
           ) : (
             filtered.map((user) => (
               <Link key={user.userId} href={`/users/${user.userId}`}>
                 <Card
-                  className="bg-card/30 border-border/50 hover:bg-card/60 hover:border-primary/30 transition-all cursor-pointer"
+                  className="bg-card/40 border-border/60 hover:border-primary/40 kawaii-card cursor-pointer"
                   data-testid={`card-user-${user.userId}`}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
@@ -59,10 +60,10 @@ export function Users() {
                       <img
                         src={user.avatarUrl}
                         alt={user.username}
-                        className="w-10 h-10 rounded-lg ring-1 ring-border/50"
+                        className="w-10 h-10 rounded-xl ring-1 ring-border/60"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -77,14 +78,14 @@ export function Users() {
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <MessageSquare className="w-3.5 h-3.5" />
+                        <MessageSquare className="w-3.5 h-3.5 text-primary/60" />
                         {user.messageCount.toLocaleString()}
                       </span>
                       <span className="flex items-center gap-1 hidden sm:flex">
-                        <Clock className="w-3.5 h-3.5" />
+                        <Clock className="w-3.5 h-3.5 text-primary/60" />
                         {new Date(user.lastSeen).toLocaleDateString()}
                       </span>
-                      <Badge variant="outline" className="text-xs border-border/50 hidden md:flex">
+                      <Badge variant="outline" className="text-xs border-border/60 hidden md:flex rounded-lg">
                         {(user.servers ?? []).length} server{(user.servers ?? []).length !== 1 ? "s" : ""}
                       </Badge>
                     </div>

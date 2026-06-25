@@ -46,11 +46,11 @@ export function PortalHome() {
   useEffect(() => { load(); }, []);
 
   async function handleResetAll() {
-    if (!confirm("Reset ALL your chat history with Priya across every server? This cannot be undone.")) return;
+    if (!confirm("Reset ALL your chat history with mommy across every server? This cannot be undone.")) return;
     setResetting(true);
     try {
       await deleteAllPortalHistory();
-      toast({ title: "All cleared!", description: "Your entire chat history has been reset." });
+      toast({ title: "All cleared! 🌸", description: "Your entire chat history has been reset." });
       await load();
     } catch {
       toast({ title: "Error", description: "Could not clear history.", variant: "destructive" });
@@ -62,7 +62,12 @@ export function PortalHome() {
   if (loading) {
     return (
       <PortalLayout>
-        <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">Loading your profile...</div>
+        <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+          <div className="text-center space-y-3">
+            <div className="text-4xl animate-pulse">🌸</div>
+            <p>Loading your profile...</p>
+          </div>
+        </div>
       </PortalLayout>
     );
   }
@@ -72,39 +77,39 @@ export function PortalHome() {
       <PortalLayout>
         <div className="flex flex-col items-center justify-center h-64 gap-4">
           <p className="text-destructive text-sm">{error}</p>
-          <Button variant="outline" onClick={() => setLocation("/portal")}>Go back</Button>
+          <Button variant="outline" onClick={() => setLocation("/portal")} className="rounded-xl">Go back</Button>
         </div>
       </PortalLayout>
     );
   }
 
   const vibeLabels: Record<string, string> = {
-    friend: "Friends",
-    bestie: "Besties",
-    crush: "Crush",
-    formal: "Formal",
+    friend: "Friends 🫂",
+    bestie: "Besties 💞",
+    crush: "Crush 💘",
+    formal: "Formal 🤝",
   };
 
   const totalMessages = stats?.servers.reduce((s, srv) => s + srv.messageCount, 0) ?? 0;
   const serverCount = stats?.servers.length ?? 0;
   const lastActive = stats?.servers[0]?.lastMessage ?? null;
 
-  // Get last user message for "last thing you said"
   const lastUserMsg = stats?.recentMessages.find((m) => m.role === "user");
   const lastBotMsg = stats?.recentMessages.find((m) => m.role === "assistant");
 
   return (
     <PortalLayout>
-      <div className="space-y-5">
+      <div className="space-y-5 slide-up">
 
         {/* Profile card */}
-        <Card className="bg-gradient-to-br from-indigo-500/5 to-background border-indigo-500/20">
-          <CardContent className="pt-5 pb-5">
+        <Card className="bg-gradient-to-br from-primary/10 via-purple-500/5 to-card border-primary/30 kawaii-glow relative overflow-hidden">
+          <div className="absolute inset-0 kawaii-shimmer pointer-events-none" />
+          <CardContent className="pt-5 pb-5 relative">
             <div className="flex items-center gap-4">
               {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt="avatar" className="w-14 h-14 rounded-full border-2 border-indigo-500/30" />
+                <img src={user.avatarUrl} alt="avatar" className="w-14 h-14 rounded-2xl border-2 border-primary/40 shadow-lg shadow-primary/20" />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-indigo-500/20 border-2 border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xl">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-purple-500/20 border-2 border-primary/30 flex items-center justify-center text-primary font-bold text-xl shadow-lg">
                   {user?.username?.[0]?.toUpperCase()}
                 </div>
               )}
@@ -118,29 +123,29 @@ export function PortalHome() {
                 </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   {user?.relationshipVibe && (
-                    <Badge variant="outline" className="text-xs bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+                    <Badge variant="outline" className="text-xs kawaii-badge">
                       {vibeLabels[user.relationshipVibe] ?? user.relationshipVibe}
                     </Badge>
                   )}
                   {user?.pronouns && (
-                    <Badge variant="outline" className="text-xs">{user.pronouns}</Badge>
+                    <Badge variant="outline" className="text-xs border-border/60 rounded-lg">{user.pronouns}</Badge>
                   )}
                   {user?.languageStyle === "english" && (
-                    <Badge variant="outline" className="text-xs">English mode</Badge>
+                    <Badge variant="outline" className="text-xs border-border/60 rounded-lg">English mode</Badge>
                   )}
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground" onClick={load}>
+              <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground rounded-xl" onClick={load}>
                 <RefreshCw className="w-4 h-4" />
               </Button>
             </div>
 
             {!user?.nickname && !user?.relationshipVibe && (
-              <div className="mt-4 flex items-start gap-3 bg-indigo-500/5 rounded-lg p-3 border border-indigo-500/10">
-                <Sparkles className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
+              <div className="mt-4 flex items-start gap-3 bg-primary/5 rounded-xl p-3 border border-primary/15">
+                <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                 <p className="text-xs text-muted-foreground">
-                  Set your nickname and vibe so Priya knows exactly how to talk to you —{" "}
-                  <button className="text-indigo-400 hover:underline" onClick={() => setLocation("/portal/settings")}>
+                  Set your nickname and vibe so mommy knows how to talk to you —{" "}
+                  <button className="text-primary hover:underline" onClick={() => setLocation("/portal/settings")}>
                     go to Settings
                   </button>.
                 </p>
@@ -151,37 +156,31 @@ export function PortalHome() {
 
         {/* Activity stats row */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-card/30">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-indigo-400">{totalMessages}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Total Messages</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/30">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-indigo-400">{serverCount}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Servers</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-card/30">
-            <CardContent className="p-4 text-center">
-              <div className="text-sm font-semibold text-indigo-400 leading-tight">{timeAgo(lastActive)}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Last Active</div>
-            </CardContent>
-          </Card>
+          {[
+            { value: totalMessages, label: "Messages", color: "text-primary" },
+            { value: serverCount, label: "Servers", color: "text-purple-400" },
+            { value: timeAgo(lastActive), label: "Last Active", color: "text-accent" },
+          ].map((stat, i) => (
+            <Card key={i} className="bg-card/40 border-border/60 kawaii-card">
+              <CardContent className="p-4 text-center">
+                <div className={`text-xl font-bold ${stat.color} leading-tight`}>{stat.value}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Per-server activity */}
         {stats && stats.servers.length > 0 && (
-          <Card>
+          <Card className="bg-card/40 border-border/60 kawaii-card">
             <CardHeader className="pb-2 pt-4">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Server className="w-4 h-4 text-indigo-400" />
+                <Server className="w-4 h-4 text-primary" />
                 Activity by Server
               </CardTitle>
             </CardHeader>
             <CardContent className="pb-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {stats.servers.slice(0, 5).map((srv) => {
                   const pct = totalMessages > 0 ? (srv.messageCount / totalMessages) * 100 : 0;
                   return (
@@ -191,22 +190,23 @@ export function PortalHome() {
                         <div className="flex items-center gap-2 text-muted-foreground shrink-0">
                           <Clock className="w-3 h-3" />
                           {timeAgo(srv.lastMessage)}
-                          <span className="font-medium text-foreground">{srv.messageCount}</span>
+                          <span className="font-semibold text-primary">{srv.messageCount}</span>
                         </div>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-indigo-500/60 rounded-full transition-all"
-                          style={{ width: `${Math.max(pct, 2)}%` }}
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.max(pct, 2)}%`,
+                            background: "linear-gradient(90deg, hsl(330 90% 68%), hsl(270 80% 65%))",
+                          }}
                         />
                       </div>
                     </div>
                   );
                 })}
                 {stats.servers.length > 5 && (
-                  <p className="text-xs text-muted-foreground text-center pt-1">
-                    +{stats.servers.length - 5} more servers
-                  </p>
+                  <p className="text-xs text-muted-foreground text-center pt-1">+{stats.servers.length - 5} more servers</p>
                 )}
               </div>
             </CardContent>
@@ -215,30 +215,30 @@ export function PortalHome() {
 
         {/* Recent conversation */}
         {lastUserMsg && lastBotMsg && (
-          <Card>
+          <Card className="bg-card/40 border-border/60 kawaii-card">
             <CardHeader className="pb-2 pt-4">
               <CardTitle className="text-sm flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-indigo-400" />
+                <MessageSquare className="w-4 h-4 text-primary" />
                 Last Conversation
                 <span className="text-xs text-muted-foreground font-normal ml-auto">{lastUserMsg.guildName}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pb-4 space-y-2">
               <div className="flex justify-end">
-                <div className="max-w-[80%] bg-indigo-600/20 rounded-xl rounded-br-sm px-3 py-2 text-sm">
+                <div className="max-w-[80%] bg-gradient-to-br from-primary/20 to-purple-500/10 rounded-2xl rounded-br-sm px-3 py-2 text-sm border border-primary/20">
                   <p className="text-[10px] text-muted-foreground mb-1">You</p>
                   <p className="line-clamp-2">{lastUserMsg.content}</p>
                 </div>
               </div>
               <div className="flex justify-start">
-                <div className="max-w-[80%] bg-muted rounded-xl rounded-bl-sm px-3 py-2 text-sm">
-                  <p className="text-[10px] text-muted-foreground mb-1">Priya</p>
+                <div className="max-w-[80%] bg-muted/60 rounded-2xl rounded-bl-sm px-3 py-2 text-sm border border-border/40">
+                  <p className="text-[10px] text-muted-foreground mb-1">mommy 🌸</p>
                   <p className="line-clamp-2">{lastBotMsg.content}</p>
                 </div>
               </div>
               <div className="flex justify-end pt-1">
                 <button
-                  className="text-xs text-indigo-400 hover:underline flex items-center gap-1"
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
                   onClick={() => setLocation("/portal/history")}
                 >
                   See full history <ArrowRight className="w-3 h-3" />
@@ -251,36 +251,36 @@ export function PortalHome() {
         {/* Quick actions */}
         <div className="grid gap-3 sm:grid-cols-2">
           <Card
-            className="cursor-pointer hover:border-indigo-500/40 transition-colors group"
+            className="cursor-pointer hover:border-primary/50 kawaii-card group bg-card/40 border-border/60"
             onClick={() => setLocation("/portal/history")}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-indigo-400" />
+                <MessageSquare className="w-4 h-4 text-primary" />
                 Chat History
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xs text-muted-foreground">View or reset your conversations with Priya across all servers.</p>
-              <div className="mt-3 flex items-center gap-1 text-xs text-indigo-400 group-hover:gap-2 transition-all">
+              <p className="text-xs text-muted-foreground">View or reset your conversations with mommy across all servers.</p>
+              <div className="mt-3 flex items-center gap-1 text-xs text-primary group-hover:gap-2 transition-all">
                 View history <ArrowRight className="w-3 h-3" />
               </div>
             </CardContent>
           </Card>
 
           <Card
-            className="cursor-pointer hover:border-indigo-500/40 transition-colors group"
+            className="cursor-pointer hover:border-primary/50 kawaii-card group bg-card/40 border-border/60"
             onClick={() => setLocation("/portal/settings")}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4 text-indigo-400" />
+                <Settings className="w-4 h-4 text-primary" />
                 Preferences
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xs text-muted-foreground">Set your nickname, pronouns, vibe and language style.</p>
-              <div className="mt-3 flex items-center gap-1 text-xs text-indigo-400 group-hover:gap-2 transition-all">
+              <div className="mt-3 flex items-center gap-1 text-xs text-primary group-hover:gap-2 transition-all">
                 Edit settings <ArrowRight className="w-3 h-3" />
               </div>
             </CardContent>
@@ -289,16 +289,16 @@ export function PortalHome() {
 
         {/* Danger zone */}
         {totalMessages > 0 && (
-          <Card className="border-destructive/20">
+          <Card className="border-red-500/20 bg-card/40">
             <CardContent className="p-4 flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium">Reset All History</p>
-                <p className="text-xs text-muted-foreground">Delete all your conversations with Priya across every server.</p>
+                <p className="text-xs text-muted-foreground">Delete all your conversations with mommy across every server.</p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+                className="shrink-0 text-red-400 hover:text-red-400 hover:bg-red-500/10 border-red-500/20 rounded-xl"
                 onClick={handleResetAll}
                 disabled={resetting}
               >

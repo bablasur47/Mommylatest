@@ -92,6 +92,70 @@ router.get("/servers/:guildId/channels/nsfw", requireAuth, async (req, res): Pro
   res.json(allChannels);
 });
 
+router.get("/servers/:guildId/config", requireAuth, async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.guildId) ? req.params.guildId[0] : req.params.guildId;
+  const params = GetServerParams.safeParse({ guildId: rawId });
+  if (!params.success) {
+    res.status(400).json({ error: "Invalid guild ID" });
+    return;
+  }
+  const server = await ServerConfig.findOne({ guildId: params.data.guildId });
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+  res.json({
+    welcomeEnabled: server.welcomeEnabled,
+    welcomeChannelId: server.welcomeChannelId ?? "",
+    pingChannelId: server.pingChannelId ?? "",
+    prefix: server.prefix ?? "!",
+    aiEnabled: server.aiEnabled,
+  });
+});
+
+router.patch("/servers/:guildId/config", requireAuth, async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.guildId) ? req.params.guildId[0] : req.params.guildId;
+  const params = GetServerParams.safeParse({ guildId: rawId });
+  if (!params.success) {
+    res.status(400).json({ error: "Invalid guild ID" });
+    return;
+  }
+
+  const { welcomeEnabled, welcomeChannelId, pingChannelId, prefix, aiEnabled } = req.body as {
+    welcomeEnabled?: boolean;
+    welcomeChannelId?: string;
+    pingChannelId?: string;
+    prefix?: string;
+    aiEnabled?: boolean;
+  };
+
+  const update: Record<string, unknown> = {};
+  if (typeof welcomeEnabled === "boolean") update.welcomeEnabled = welcomeEnabled;
+  if (typeof welcomeChannelId === "string") update.welcomeChannelId = welcomeChannelId || null;
+  if (typeof pingChannelId === "string") update.pingChannelId = pingChannelId || null;
+  if (typeof prefix === "string" && prefix.trim()) update.prefix = prefix.trim();
+  if (typeof aiEnabled === "boolean") update.aiEnabled = aiEnabled;
+
+  const server = await ServerConfig.findOneAndUpdate(
+    { guildId: params.data.guildId },
+    { $set: update },
+    { new: true }
+  );
+
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+
+  res.json({
+    welcomeEnabled: server.welcomeEnabled,
+    welcomeChannelId: server.welcomeChannelId ?? "",
+    pingChannelId: server.pingChannelId ?? "",
+    prefix: server.prefix ?? "!",
+    aiEnabled: server.aiEnabled,
+  });
+});
+
 router.get("/servers/:guildId/invite", requireAuth, async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.guildId) ? req.params.guildId[0] : req.params.guildId;
   const params = GetServerParams.safeParse({ guildId: rawId });

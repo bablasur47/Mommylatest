@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, BrainCircuit } from "lucide-react";
+import { Save } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 type PersonalityFormData = {
@@ -32,7 +31,7 @@ export function Personality() {
 
   const form = useForm<PersonalityFormData>({
     defaultValues: {
-      name: "Priya",
+      name: "mommy",
       systemPrompt: "",
       nsfwEnabled: false,
       randomPingEnabled: true,
@@ -61,7 +60,7 @@ export function Personality() {
   const updateMutation = useUpdatePersonality({
     mutation: {
       onSuccess: () => {
-        toast({ title: "Saved", description: "Personality settings updated." });
+        toast({ title: "Saved! 🌸", description: "Personality settings updated." });
         queryClient.invalidateQueries({ queryKey: getGetPersonalityQueryKey() });
       },
       onError: () => toast({ title: "Error", description: "Failed to save settings.", variant: "destructive" }),
@@ -74,7 +73,7 @@ export function Personality() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="space-y-6 slide-up">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-48 w-full rounded-xl" />
         <Skeleton className="h-32 w-full rounded-xl" />
@@ -83,22 +82,27 @@ export function Personality() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 slide-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Personality</h1>
-          <p className="text-muted-foreground mt-1">Configure Priya's behavior and character.</p>
+          <h1 className="text-3xl font-bold tracking-tight gradient-text">Personality 🧠</h1>
+          <p className="text-muted-foreground mt-1">Configure mommy's character and behavior</p>
         </div>
-        <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-          <BrainCircuit className="w-5 h-5 text-primary" />
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-primary/30 flex items-center justify-center text-2xl shadow shadow-primary/20">
+          🧠
         </div>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          <Card className="bg-card/30 border-border/50">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Identity</CardTitle>
+
+          {/* Identity */}
+          <Card className="bg-card/40 border-border/60 kawaii-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <span>🌸</span> Identity
+              </CardTitle>
+              <CardDescription className="text-xs">The bot's name and core AI instructions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -108,7 +112,7 @@ export function Personality() {
                   <FormItem>
                     <FormLabel>Bot Name</FormLabel>
                     <FormControl>
-                      <Input {...field} className="bg-background/50 border-border/50 max-w-xs" data-testid="input-bot-name" />
+                      <Input {...field} className="bg-background/50 border-border/60 max-w-xs rounded-xl" data-testid="input-bot-name" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -120,13 +124,13 @@ export function Personality() {
                   <FormItem>
                     <FormLabel>System Prompt</FormLabel>
                     <FormDescription className="text-xs">
-                      This is the core instruction set for Priya's personality.
+                      The core personality instructions for mommy.
                     </FormDescription>
                     <FormControl>
                       <Textarea
                         {...field}
                         rows={10}
-                        className="bg-background/50 border-border/50 font-mono text-xs resize-y"
+                        className="bg-background/50 border-border/60 font-mono text-xs resize-y rounded-xl"
                         data-testid="textarea-system-prompt"
                       />
                     </FormControl>
@@ -140,18 +144,18 @@ export function Personality() {
                   <FormItem>
                     <FormLabel>Active AI Provider</FormLabel>
                     <FormDescription className="text-xs">
-                      Primary provider. Falls back to others if rate limited.
+                      Primary provider — falls back to others if rate limited.
                     </FormDescription>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger className="bg-background/50 border-border/50 max-w-xs" data-testid="select-provider">
+                        <SelectTrigger className="bg-background/50 border-border/60 max-w-xs rounded-xl" data-testid="select-provider">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="groq">Groq</SelectItem>
-                        <SelectItem value="gemini">Gemini</SelectItem>
-                        <SelectItem value="nvidia">Nvidia</SelectItem>
+                        <SelectItem value="groq">⚡ Groq</SelectItem>
+                        <SelectItem value="gemini">💎 Gemini</SelectItem>
+                        <SelectItem value="nvidia">🚀 Nvidia</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -160,28 +164,28 @@ export function Personality() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/30 border-border/50">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Behavior Toggles</CardTitle>
+          {/* Behavior Toggles */}
+          <Card className="bg-card/40 border-border/60 kawaii-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <span>⚙️</span> Behavior Toggles
+              </CardTitle>
+              <CardDescription className="text-xs">Global on/off switches for mommy's features</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <FormField
                 control={form.control}
                 name="nsfwEnabled"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between">
+                  <FormItem className="flex items-center justify-between p-3 rounded-xl bg-background/30 border border-border/40">
                     <div>
-                      <FormLabel>NSFW Mode (Global)</FormLabel>
-                      <FormDescription className="text-xs">
+                      <FormLabel className="flex items-center gap-1.5">🔞 NSFW Mode (Global)</FormLabel>
+                      <FormDescription className="text-xs mt-0.5">
                         Master switch. Per-channel control via /nsfw command.
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="toggle-nsfw"
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="toggle-nsfw" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -190,11 +194,11 @@ export function Personality() {
                 control={form.control}
                 name="randomPingEnabled"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between">
+                  <FormItem className="flex items-center justify-between p-3 rounded-xl bg-background/30 border border-border/40">
                     <div>
-                      <FormLabel>Random Pings</FormLabel>
-                      <FormDescription className="text-xs">
-                        Priya randomly messages members to start conversations.
+                      <FormLabel className="flex items-center gap-1.5">🎲 Random Pings</FormLabel>
+                      <FormDescription className="text-xs mt-0.5">
+                        mommy randomly messages members to start conversations.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -207,11 +211,11 @@ export function Personality() {
                 control={form.control}
                 name="greetNewMembers"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between">
+                  <FormItem className="flex items-center justify-between p-3 rounded-xl bg-background/30 border border-border/40">
                     <div>
-                      <FormLabel>Greet New Members</FormLabel>
-                      <FormDescription className="text-xs">
-                        Send a welcome message when someone joins.
+                      <FormLabel className="flex items-center gap-1.5">👋 Greet New Members</FormLabel>
+                      <FormDescription className="text-xs mt-0.5">
+                        Send a welcome message when someone joins a server.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -223,9 +227,13 @@ export function Personality() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/30 border-border/50">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Limits</CardTitle>
+          {/* Limits */}
+          <Card className="bg-card/40 border-border/60 kawaii-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <span>⏱️</span> Limits & Memory
+              </CardTitle>
+              <CardDescription className="text-xs">Control timing and how long mommy remembers conversations</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -233,14 +241,14 @@ export function Personality() {
                 name="randomPingIntervalMinutes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Random Ping Interval (minutes)</FormLabel>
+                    <FormLabel>Random Ping Interval (min)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min={30}
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        className="bg-background/50 border-border/50"
+                        className="bg-background/50 border-border/60 rounded-xl"
                         data-testid="input-ping-interval"
                       />
                     </FormControl>
@@ -260,7 +268,7 @@ export function Personality() {
                         max={30}
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
-                        className="bg-background/50 border-border/50"
+                        className="bg-background/50 border-border/60 rounded-xl"
                         data-testid="input-history-days"
                       />
                     </FormControl>
@@ -271,9 +279,14 @@ export function Personality() {
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={updateMutation.isPending} data-testid="button-save-personality">
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="rounded-xl bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/30 font-semibold"
+              data-testid="button-save-personality"
+            >
               <Save className="w-4 h-4 mr-2" />
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              {updateMutation.isPending ? "Saving..." : "Save Changes ✨"}
             </Button>
           </div>
         </form>

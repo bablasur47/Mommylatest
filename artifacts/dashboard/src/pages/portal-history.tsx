@@ -30,11 +30,11 @@ export function PortalHistory() {
   useEffect(() => { load(); }, []);
 
   async function handleDeleteGuild(guildId: string, guildName: string) {
-    if (!confirm(`Reset your chat history with Priya in "${guildName}"? This cannot be undone.`)) return;
+    if (!confirm(`Reset your chat history with mommy in "${guildName}"? This cannot be undone.`)) return;
     setDeleting(guildId);
     try {
       await deletePortalHistoryGuild(guildId);
-      toast({ title: "Cleared!", description: `Chat history in ${guildName} has been reset.` });
+      toast({ title: "Cleared! 🌸", description: `Chat history in ${guildName} has been reset.` });
       await load();
     } catch {
       toast({ title: "Error", description: "Could not clear history.", variant: "destructive" });
@@ -44,11 +44,11 @@ export function PortalHistory() {
   }
 
   async function handleDeleteAll() {
-    if (!confirm("Reset ALL your chat history with Priya across every server? This cannot be undone.")) return;
+    if (!confirm("Reset ALL your chat history with mommy across every server? This cannot be undone.")) return;
     setDeleting("all");
     try {
       await deleteAllPortalHistory();
-      toast({ title: "All cleared!", description: "Your entire chat history has been reset." });
+      toast({ title: "All cleared! 🌸", description: "Your entire chat history has been reset." });
       await load();
     } catch {
       toast({ title: "Error", description: "Could not clear history.", variant: "destructive" });
@@ -61,16 +61,16 @@ export function PortalHistory() {
 
   return (
     <PortalLayout>
-      <div className="space-y-5">
+      <div className="space-y-5 slide-up">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold">Chat History</h1>
+            <h1 className="text-xl font-bold gradient-text">Chat History 💬</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {totalMessages} messages across {entries.length} {entries.length === 1 ? "server" : "servers"}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={load} disabled={loading} className="rounded-xl">
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
@@ -78,7 +78,7 @@ export function PortalHistory() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+                className="text-red-400 hover:text-red-400 hover:bg-red-500/10 border-red-500/20 rounded-xl"
                 onClick={handleDeleteAll}
                 disabled={deleting === "all"}
               >
@@ -90,18 +90,21 @@ export function PortalHistory() {
         </div>
 
         {loading && (
-          <div className="text-center text-muted-foreground text-sm py-16">Loading history...</div>
+          <div className="text-center text-muted-foreground text-sm py-16">
+            <div className="text-3xl mb-3 animate-pulse">💬</div>
+            Loading history...
+          </div>
         )}
 
         {!loading && entries.length === 0 && (
           <div className="text-center text-muted-foreground py-16">
             <MessageSquare className="w-8 h-8 mx-auto mb-3 opacity-40" />
-            <p className="text-sm">No chat history yet. Go talk to Priya!</p>
+            <p className="text-sm">No chat history yet. Go talk to mommy!</p>
           </div>
         )}
 
         {entries.map((entry) => (
-          <Card key={entry.guildId} className="overflow-hidden">
+          <Card key={entry.guildId} className="overflow-hidden bg-card/40 border-border/60 kawaii-card">
             <CardHeader className="py-3 px-4">
               <div className="flex items-center justify-between gap-3">
                 <button
@@ -114,12 +117,12 @@ export function PortalHistory() {
                     <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   )}
                   <CardTitle className="text-sm font-medium truncate">{entry.guildName}</CardTitle>
-                  <Badge variant="secondary" className="text-xs shrink-0">{entry.messageCount} msgs</Badge>
+                  <Badge variant="secondary" className="text-xs shrink-0 rounded-lg">{entry.messageCount} msgs</Badge>
                 </button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                  className="h-7 w-7 text-muted-foreground hover:text-red-400 shrink-0 rounded-lg"
                   onClick={() => handleDeleteGuild(entry.guildId, entry.guildName)}
                   disabled={deleting === entry.guildId}
                   title="Reset history in this server"
@@ -138,13 +141,13 @@ export function PortalHistory() {
                     ) : (
                       entry.messages.map((msg, i) => (
                         <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
+                          <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed border ${
                             msg.role === "user"
-                              ? "bg-indigo-600/20 text-foreground rounded-br-sm"
-                              : "bg-muted text-foreground rounded-bl-sm"
+                              ? "bg-gradient-to-br from-primary/20 to-purple-500/10 border-primary/20 rounded-br-sm"
+                              : "bg-muted/50 border-border/40 rounded-bl-sm"
                           }`}>
                             <p className="text-[10px] font-medium mb-1 text-muted-foreground">
-                              {msg.role === "user" ? "You" : "Priya"}
+                              {msg.role === "user" ? "You" : "mommy 🌸"}
                             </p>
                             {msg.content}
                           </div>
