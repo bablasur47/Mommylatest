@@ -1,19 +1,21 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useLogout } from "@workspace/api-client-react";
-import { Activity, Server, Users, Key, BrainCircuit, LogOut, Sparkles } from "lucide-react";
+import { useLogout, useGetBotStatus } from "@workspace/api-client-react";
+import { LayoutDashboard, Server, Users, Key, BrainCircuit, LogOut, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/overview", label: "Overview", icon: Activity, emoji: "✨" },
-  { href: "/servers", label: "Servers", icon: Server, emoji: "🌸" },
-  { href: "/users", label: "Users", icon: Users, emoji: "💖" },
-  { href: "/apis", label: "API Keys", icon: Key, emoji: "🔑" },
-  { href: "/personality", label: "Personality", icon: BrainCircuit, emoji: "🧠" },
+  { href: "/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/servers", label: "Servers", icon: Server },
+  { href: "/users", label: "Users", icon: Users },
+  { href: "/apis", label: "API Keys", icon: Key },
+  { href: "/personality", label: "Personality", icon: BrainCircuit },
 ];
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
+  const { data: botStatus } = useGetBotStatus();
+
   const logoutMutation = useLogout({
     mutation: {
       onSuccess: () => {
@@ -28,55 +30,71 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/30">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden md:flex w-64 border-r border-border/60 bg-card/40 backdrop-blur-xl flex-col shrink-0 relative overflow-hidden">
-        {/* Decorative sparkles */}
-        <div className="absolute top-20 right-4 w-2 h-2 rounded-full bg-primary/40 float-sparkle" style={{ animationDelay: "0s" }} />
-        <div className="absolute top-48 left-3 w-1.5 h-1.5 rounded-full bg-accent/50 float-sparkle" style={{ animationDelay: "1s" }} />
-        <div className="absolute bottom-40 right-6 w-2 h-2 rounded-full bg-purple-400/40 float-sparkle" style={{ animationDelay: "2s" }} />
-
-        {/* Logo area */}
-        <div className="h-16 flex items-center px-5 border-b border-border/60 bg-background/30 backdrop-blur">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/30 to-purple-500/30 flex items-center justify-center border border-primary/40 shadow-lg shadow-primary/20">
-              <span className="text-lg">🌸</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold leading-tight tracking-tight text-sm gradient-text">mommy</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Dashboard</span>
+      <aside className="hidden md:flex w-56 flex-col shrink-0 border-r border-white/5 bg-black/40 backdrop-blur-xl">
+        {/* Logo / Bot info */}
+        <div className="h-16 flex items-center px-4 border-b border-white/5">
+          <div className="flex items-center gap-3 min-w-0">
+            {botStatus?.avatarUrl ? (
+              <img
+                src={botStatus.avatarUrl}
+                alt={botStatus.username}
+                className="w-8 h-8 rounded-full ring-1 ring-white/10 shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-base">
+                🌸
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-white/85 truncate leading-tight">
+                {botStatus?.username ?? "mommy"}
+              </div>
+              <div className="text-[10px] text-white/30 uppercase tracking-widest">Dashboard</div>
             </div>
           </div>
         </div>
 
+        {/* Online badge */}
+        {botStatus && (
+          <div className="px-4 py-2.5 border-b border-white/5">
+            <div className={`flex items-center gap-1.5 text-[11px] font-medium ${botStatus.online ? "text-emerald-400" : "text-red-400"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${botStatus.online ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.8)]" : "bg-red-400"} animate-pulse`} />
+              {botStatus.online ? "Online" : "Offline"}
+              {botStatus.online && <span className="text-white/25 font-normal ml-auto">{botStatus.ping}ms</span>}
+            </div>
+          </div>
+        )}
+
         {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <span className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all duration-200 cursor-pointer group ${
-                isActive(item.href)
-                  ? "bg-primary/15 text-primary font-semibold border border-primary/30 shadow shadow-primary/10 kawaii-glow"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground hover:border hover:border-border/80 border border-transparent"
-              }`}>
-                <span className="text-base">{item.emoji}</span>
-                <item.icon className={`w-4 h-4 ${isActive(item.href) ? "text-primary" : "group-hover:text-foreground"}`} />
-                {item.label}
-                {isActive(item.href) && (
-                  <Sparkles className="w-3 h-3 ml-auto text-primary/60" />
-                )}
-              </span>
-            </Link>
-          ))}
+        <nav className="flex-1 p-3 space-y-0.5">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link key={item.href} href={item.href}>
+                <span className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-md transition-all duration-150 cursor-pointer relative ${
+                  active
+                    ? "bg-white/6 text-white/90 font-medium accent-bar"
+                    : "text-white/38 hover:text-white/70 hover:bg-white/4"
+                }`}>
+                  <item.icon className={`w-4 h-4 shrink-0 ${active ? "text-[hsl(192,90%,50%)]" : ""}`} />
+                  {item.label}
+                  {active && <ChevronRight className="w-3 h-3 ml-auto text-white/20" />}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border/60 bg-background/20">
+        <div className="p-3 border-t border-white/5">
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-xl text-sm"
+            className="w-full justify-start text-white/30 hover:text-red-400/80 hover:bg-red-500/8 rounded-md text-sm h-9 px-3"
             onClick={() => logoutMutation.mutate()}
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-4 h-4 mr-2.5" />
             Sign Out
           </Button>
         </div>
@@ -85,17 +103,19 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       {/* ── Main content ── */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Mobile top bar */}
-        <div className="md:hidden h-14 border-b border-border/60 flex items-center justify-between px-4 bg-background/80 backdrop-blur sticky top-0 z-10">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/30 to-purple-500/30 flex items-center justify-center border border-primary/30 shadow shadow-primary/20">
-              <span className="text-sm">🌸</span>
-            </div>
-            <span className="font-bold text-sm gradient-text">mommy</span>
+        <div className="md:hidden h-14 border-b border-white/5 flex items-center justify-between px-4 bg-black/50 backdrop-blur sticky top-0 z-10">
+          <div className="flex items-center gap-2.5">
+            {botStatus?.avatarUrl ? (
+              <img src={botStatus.avatarUrl} alt={botStatus.username} className="w-7 h-7 rounded-full ring-1 ring-white/10" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm">🌸</div>
+            )}
+            <span className="font-semibold text-sm text-white/80">{botStatus?.username ?? "mommy"}</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground hover:text-red-400"
+            className="text-white/30 hover:text-red-400/80 w-8 h-8"
             onClick={() => logoutMutation.mutate()}
           >
             <LogOut className="w-4 h-4" />
@@ -110,14 +130,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </main>
 
-      {/* ── Mobile bottom navigation bar ── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border/60 z-20 flex">
+      {/* ── Mobile bottom nav ── */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-black/80 backdrop-blur border-t border-white/5 z-20 flex">
         {navItems.map((item) => (
           <Link key={item.href} href={item.href} className="flex-1">
-            <span className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-              isActive(item.href) ? "text-primary" : "text-muted-foreground"
+            <span className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${
+              isActive(item.href) ? "text-[hsl(192,90%,50%)]" : "text-white/30"
             }`}>
-              <span className="text-base leading-none">{item.emoji}</span>
+              <item.icon className="w-4 h-4" />
               {item.label}
             </span>
           </Link>

@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLogin } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { AnimeBackground } from "@/components/AnimeBackground";
+import { Lock } from "lucide-react";
 
 export function Login() {
   const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [botInfo, setBotInfo] = useState<{ username: string; avatarUrl: string | null } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/bot/avatar")
+      .then((r) => r.json())
+      .then(setBotInfo)
+      .catch(() => {});
+  }, []);
 
   const loginMutation = useLogin({
     mutation: {
@@ -18,19 +27,11 @@ export function Login() {
           localStorage.setItem("dashboard_token", data.token);
           setLocation("/overview");
         } else {
-          toast({
-            title: "Wrong password!",
-            description: "Try again bestie 💀",
-            variant: "destructive",
-          });
+          toast({ title: "Wrong password", description: "Access denied.", variant: "destructive" });
         }
       },
       onError: () => {
-        toast({
-          title: "Connection error",
-          description: "Could not reach the server.",
-          variant: "destructive",
-        });
+        toast({ title: "Connection error", description: "Could not reach the server.", variant: "destructive" });
       },
     },
   });
@@ -42,61 +43,78 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Animated background blobs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-purple-500/10 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-      <div className="absolute top-3/4 left-1/3 w-32 h-32 rounded-full bg-accent/10 blur-2xl animate-pulse" style={{ animationDelay: "2s" }} />
+    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-[hsl(220,25%,4%)]">
+      <AnimeBackground />
 
-      {/* Floating sparkles */}
-      <div className="absolute top-20 left-20 text-2xl float-sparkle opacity-40" style={{ animationDelay: "0s" }}>✨</div>
-      <div className="absolute top-32 right-24 text-xl float-sparkle opacity-30" style={{ animationDelay: "0.7s" }}>🌸</div>
-      <div className="absolute bottom-28 left-28 text-lg float-sparkle opacity-40" style={{ animationDelay: "1.4s" }}>💖</div>
-      <div className="absolute bottom-20 right-20 text-2xl float-sparkle opacity-30" style={{ animationDelay: "2.1s" }}>⭐</div>
-      <div className="absolute top-1/2 left-10 text-xl float-sparkle opacity-20" style={{ animationDelay: "0.3s" }}>🌙</div>
-      <div className="absolute top-1/3 right-10 text-lg float-sparkle opacity-20" style={{ animationDelay: "1.8s" }}>💫</div>
+      {/* Centered login card */}
+      <div className="relative z-10 w-full max-w-sm bounce-in">
+        {/* Glass card */}
+        <div className="bg-black/60 backdrop-blur-2xl border border-white/8 rounded-2xl shadow-2xl overflow-hidden">
+          {/* Top accent line */}
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-[hsl(192,90%,50%)] to-transparent opacity-60" />
 
-      <Card className="w-full max-w-sm relative bg-card/70 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 bounce-in kawaii-glow">
-        <CardHeader className="space-y-4 text-center pt-8 pb-4">
-          {/* Avatar */}
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 via-purple-500/20 to-accent/20 flex items-center justify-center border border-primary/40 shadow-lg shadow-primary/20">
-            <span className="text-3xl">🌸</span>
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold gradient-text">mommy</h1>
-            <p className="text-sm text-muted-foreground">Enter the secret to access the dashboard</p>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="🔑 Secret password..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-background/50 border-border/60 focus-visible:ring-primary rounded-xl text-center text-sm h-11"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full font-semibold rounded-xl h-11 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg shadow-primary/30 transition-all hover:shadow-primary/50 hover:-translate-y-0.5"
-              disabled={loginMutation.isPending || !password}
-            >
-              {loginMutation.isPending ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Checking...
-                </span>
+          <div className="p-8 space-y-6">
+            {/* Bot avatar + name */}
+            <div className="flex flex-col items-center gap-3">
+              {botInfo?.avatarUrl ? (
+                <img
+                  src={botInfo.avatarUrl}
+                  alt={botInfo.username}
+                  className="w-18 h-18 rounded-full ring-2 ring-white/10 shadow-lg"
+                  style={{ width: 72, height: 72 }}
+                />
               ) : (
-                "Enter Dashboard ✨"
+                <div className="w-[72px] h-[72px] rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-lg">
+                  🌸
+                </div>
               )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="text-center">
+                <h1 className="text-xl font-semibold tracking-tight text-white/90">
+                  {botInfo?.username ?? "mommy"}
+                </h1>
+                <p className="text-xs text-white/35 mt-0.5 tracking-wider uppercase">Dashboard</p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-white/6" />
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25" />
+                <Input
+                  type="password"
+                  placeholder="Enter secret..."
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-9 bg-white/5 border-white/10 focus-visible:ring-[hsl(192,90%,50%)] focus-visible:border-[hsl(192,90%,50%)/50] rounded-lg h-10 text-sm text-white/80 placeholder:text-white/25"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full h-10 rounded-lg font-medium text-sm tracking-wide text-black bg-[hsl(215,20%,72%)] hover:bg-[hsl(215,20%,82%)] transition-all shadow-lg"
+                disabled={loginMutation.isPending || !password}
+              >
+                {loginMutation.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3.5 h-3.5 border-2 border-black/20 border-t-black/60 rounded-full animate-spin" />
+                    Authenticating...
+                  </span>
+                ) : (
+                  "Enter"
+                )}
+              </Button>
+            </form>
+          </div>
+
+          {/* Bottom accent */}
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+        </div>
+
+        {/* Subtle glow under card */}
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-[hsl(192,90%,50%)] opacity-5 blur-2xl rounded-full pointer-events-none" />
+      </div>
     </div>
   );
 }

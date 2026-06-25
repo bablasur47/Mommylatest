@@ -23,6 +23,15 @@ router.get("/bot/stats", requireAuth, async (_req, res): Promise<void> => {
   res.json({ totalServers, totalUsers, totalMessages, activeToday, uptime });
 });
 
+router.get("/bot/avatar", async (_req, res): Promise<void> => {
+  if (!discordClient || !discordClient.isReady()) {
+    res.json({ username: "mommy", avatarUrl: null });
+    return;
+  }
+  const user = discordClient.user!;
+  res.json({ username: user.username, avatarUrl: user.displayAvatarURL() });
+});
+
 router.get("/bot/status", requireAuth, async (_req, res): Promise<void> => {
   if (!discordClient || !discordClient.isReady()) {
     res.json({
