@@ -14,6 +14,8 @@ import { getAiResponse } from "./ai-router";
 import { getPersonality } from "./personality";
 import { handlePrefixCommand, getServerPrefix, invalidatePrefixCache } from "./prefix-commands";
 import { generateCounterCard, generateAdoptCard } from "./cards";
+import { generateImage } from "./image-gen";
+import type { ImageStyle, ImageRatio } from "./image-gen";
 import type { CardUser, CounterMember } from "./cards";
 
 export let discordClient: Client | null = null;
@@ -426,6 +428,45 @@ export async function initBot(): Promise<void> {
         ],
       },
       {
+        name: "image",
+        description: "Generate an AI image from your description — mommy picks the best style automatically!",
+        options: [
+          {
+            name: "prompt",
+            description: "What do you want to generate? (e.g. 'anime girl in cherry blossom forest')",
+            type: 3,
+            required: true,
+          },
+          {
+            name: "style",
+            description: "Force a specific art style (default: auto-detected from your prompt)",
+            type: 3,
+            required: false,
+            choices: [
+              { name: "Auto detect", value: "auto" },
+              { name: "Realistic / Photo", value: "flux-realism" },
+              { name: "Anime / Manga", value: "flux-anime" },
+              { name: "3D Render", value: "flux-3d" },
+              { name: "Disney / Cartoon", value: "flux-disney" },
+              { name: "Pixel Art", value: "flux-pixel" },
+              { name: "Fast (lower quality)", value: "turbo" },
+            ],
+          },
+          {
+            name: "ratio",
+            description: "Aspect ratio of the image",
+            type: 3,
+            required: false,
+            choices: [
+              { name: "Square 1:1", value: "square" },
+              { name: "Portrait 9:16", value: "portrait" },
+              { name: "Landscape 16:9", value: "landscape" },
+              { name: "Ultrawide 21:9", value: "wide" },
+            ],
+          },
+        ],
+      },
+      {
         name: "remember",
         description: "Tell mommy to remember something about you",
         options: [
@@ -624,28 +665,30 @@ export async function initBot(): Promise<void> {
       if (command === "image" || command === "imagine") {
         const rawPrompt = args.join(" ").trim();
         if (!rawPrompt) {
-          await message.reply(`Kya banana hai? Kuch prompt do! Example: \`${serverPrefix}image cute cat on a mountain\``);
+          await message.reply(
+            `Kya banana hai? Kuch prompt do!\nExample: \`${serverPrefix}image anime girl in a forest\`\n` +
+            `Style auto-detect hoti hai — "anime", "pixel art", "3d render", "realistic photo" likhne se sahi model use hota hai!`
+          );
           return;
         }
-        const bannedCheck = await BotUser.findOne({ userId: message.author.id, banned: true });
-        if (bannedCheck) return;
 
         let statusMsg: Message | null = null;
         try {
-          statusMsg = await message.reply("Soch rahi hun... image bana rahi hun! Thodi wait karo 🎨");
-          const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(rawPrompt)}?width=1024&height=1024&model=flux&nologo=true&enhance=true`;
-          const imgRes = await fetch(url);
-          if (!imgRes.ok) throw new Error(`Pollinations returned ${imgRes.status}`);
-          const buffer = Buffer.from(await imgRes.arrayBuffer());
+          statusMsg = await message.reply("🎨 Prompt enhance kar rahi hun aur image bana rahi hun... thodi der wait karo!");
+          const result = await generateImage(rawPrompt, "auto", "square");
           await statusMsg.delete().catch(() => {});
+          const caption =
+            result.wasEnhanced
+              ? `**Yeh lo!** ✨ *(prompt enhanced)*\n> ${result.enhancedPrompt.slice(0, 200)}${result.enhancedPrompt.length > 200 ? "…" : ""}`
+              : `**Yeh lo!** \`${rawPrompt}\``;
           await message.reply({
-            content: `**Yeh lo!** \`${rawPrompt}\``,
-            files: [{ attachment: buffer, name: "priya-art.png" }],
+            content: caption,
+            files: [{ attachment: result.buffer, name: "mommy-art.png" }],
           });
         } catch (err) {
-          logger.error({ err }, "Image generation failed");
+          logger.error({ err }, "Image generation failed all providers");
           if (statusMsg) {
-            await statusMsg.edit("Yaar kuch gadbad ho gayi image generate karte waqt. Thodi der baad try karo!").catch(() => {});
+            await statusMsg.edit("Yaar saare image providers busy hain abhi 😤 Thodi der baad try karo!").catch(() => {});
           }
         }
         return;
@@ -808,6 +851,32 @@ export async function initBot(): Promise<void> {
             content: "NSFW mode off kar diya is channel mein.",
             ephemeral: true,
           });
+        }
+        return;
+      }
+
+      if (commandName === "image") {
+        await interaction.deferReply();
+        const rawPrompt = interaction.options.getString("prompt", true);
+        const style = (interaction.options.getString("style") ?? "auto") as ImageStyle;
+        const ratio = (interaction.options.getString("ratio") ?? "square") as ImageRatio;
+
+        try {
+          await interaction.editReply("🎨 Soch rahi hun... prompt enhance kar rahi hun aur image bana rahi hun!");
+          const result = await generateImage(rawPrompt, style, ratio);
+
+          const styleLabel = style === "auto" ? result.model : style;
+          const caption = result.wasEnhanced
+            ? `✨ **Enhanced prompt:**\n> ${result.enhancedPrompt.slice(0, 250)}${result.enhancedPrompt.length > 250 ? "…" : ""}\n*Style: \`${styleLabel}\`*`
+            : `**\`${rawPrompt}\`** — Style: \`${styleLabel}\``;
+
+          await interaction.editReply({
+            content: caption,
+            files: [{ attachment: result.buffer, name: "mommy-art.png" }],
+          });
+        } catch (err) {
+          logger.error({ err }, "/image slash command failed all providers");
+          await interaction.editReply("Yaar saare image providers busy hain abhi 😤 Thodi der baad try karo!").catch(() => {});
         }
         return;
       }
