@@ -9,7 +9,7 @@ import {
   ChannelType,
 } from "discord.js";
 import { logger } from "./logger";
-import { ChatHistory, BotUser, ServerConfig, Personality, UserRelationship } from "./models";
+import { ChatHistory, BotUser, ServerConfig, Personality, UserRelationship, UserMemory } from "./models";
 import { getAiResponse } from "./ai-router";
 import { getPersonality } from "./personality";
 import { handlePrefixCommand, getServerPrefix, invalidatePrefixCache } from "./prefix-commands";
@@ -135,6 +135,20 @@ async function generateReply(
     if (prefs.length > 0) {
       systemPrompt += `\n\n[Is user ke baare mein: ${prefs.join(". ")}]`;
     }
+  }
+
+  // ── Inject server-level custom prompt ────────────────────────────────────
+  if (guildId !== "dm") {
+    const serverConf = await ServerConfig.findOne({ guildId });
+    if (serverConf?.customPrompt) {
+      systemPrompt += `\n\n[Server instructions: ${serverConf.customPrompt}]`;
+    }
+  }
+
+  // ── Inject user memory tags ───────────────────────────────────────────────
+  const memDoc = await UserMemory.findOne({ userId, guildId });
+  if (memDoc && memDoc.memories.length > 0) {
+    systemPrompt += `\n\n[Is user ke baare mein yaad rakhne wali baatein: ${(memDoc.memories as string[]).join(". ")}]`;
   }
 
   if (isNsfw) {
@@ -411,6 +425,34 @@ export async function initBot(): Promise<void> {
           },
         ],
       },
+      {
+        name: "remember",
+        description: "Tell mommy to remember something about you",
+        options: [
+          {
+            name: "fact",
+            description: "What should mommy remember?",
+            type: 3, // STRING
+            required: true,
+          },
+        ],
+      },
+      {
+        name: "forget",
+        description: "Clear everything mommy remembers about you in this server",
+      },
+      {
+        name: "roastbattle",
+        description: "Challenge someone to a roast battle — mommy judges who wins!",
+        options: [
+          {
+            name: "opponent",
+            description: "Who do you want to roast battle?",
+            type: 6, // USER
+            required: true,
+          },
+        ],
+      },
       // ── AI toggle commands ────────────────────────────────────────────────────
       {
         name: "aioff",
@@ -646,6 +688,18 @@ export async function initBot(): Promise<void> {
     const bannedCheck = await BotUser.findOne({ userId: message.author.id, banned: true });
     if (bannedCheck) return;
 
+    // ── Auto-detect memory phrases ────────────────────────────────────────────
+    const cleanText = message.content.replace(/<@!?\d+>/g, "").trim();
+    const memMatch = cleanText.match(/^(?:mommy[,\s]+)?(?:please\s+)?(?:yaar[,\s]+)?remember\s+(?:that\s+|ke\s+|ki\s+|yeh\s+)?(.{3,200})$/i);
+    if (memMatch && memMatch[1]) {
+      const fact = memMatch[1].trim().replace(/[.!?]+$/, "");
+      await UserMemory.findOneAndUpdate(
+        { userId: message.author.id, guildId },
+        { $addToSet: { memories: fact } },
+        { upsert: true }
+      ).catch(() => {});
+    }
+
     // Check server/channel AI toggle + NSFW setting
     let isNsfw = false;
     if (!isDm && message.channelId) {
@@ -754,6 +808,78 @@ export async function initBot(): Promise<void> {
             content: "NSFW mode off kar diya is channel mein.",
             ephemeral: true,
           });
+        }
+        return;
+      }
+
+      if (commandName === "remember") {
+        const fact = interaction.options.getString("fact", true);
+        await UserMemory.findOneAndUpdate(
+          { userId: user.id, guildId: guildId ?? "dm" },
+          { $addToSet: { memories: fact } },
+          { upsert: true }
+        );
+        await interaction.reply({
+          content: `Yaad kar liya! "${fact}" 📝 Agle baar se dhyan rakhuungi.`,
+          ephemeral: true,
+        });
+        return;
+      }
+
+      if (commandName === "forget") {
+        await UserMemory.findOneAndUpdate(
+          { userId: user.id, guildId: guildId ?? "dm" },
+          { $set: { memories: [] } }
+        );
+        await interaction.reply({
+          content: "Sab bhool gayi! Tera koi record nahi mere paas ab. Fresh start! 🧹",
+          ephemeral: true,
+        });
+        return;
+      }
+
+      if (commandName === "roastbattle") {
+        await interaction.deferReply();
+        const opponent = interaction.options.getUser("opponent", true);
+        if (opponent.id === user.id) {
+          await interaction.editReply("Apne aap se roast battle? Yaar itna lonely mat ho na! 😭");
+          return;
+        }
+        if (opponent.bot) {
+          await interaction.editReply("Bot ko roast karna chahte ho? Coward bilkul! 😏");
+          return;
+        }
+        const personality = await getPersonality();
+        const challengerName = interaction.guild?.members.cache.get(user.id)?.displayName ?? user.username;
+        const opponentName = interaction.guild?.members.cache.get(opponent.id)?.displayName ?? opponent.username;
+        const prompt = `Roast battle chal raha hai!
+
+Challenger: ${challengerName}
+Opponent: ${opponentName}
+
+Tu ek sassy Indian roast battle judge hai — mommy. Dono ke liye ek ek killer roast likho (Hinglish mein, funny aur savage but playful — personal attack nahi, sirf fun). Phir dramatically winner declare karo reason ke saath.
+
+Format EXACTLY aisa use karo:
+🎤 **${challengerName} ka roast:**
+[roast yahan]
+
+🎤 **${opponentName} ka roast:**
+[roast yahan]
+
+⚖️ **Mommy ka verdict:**
+[winner ka naam bold mein — reason ke saath, dramatic ending]`;
+
+        try {
+          const reply = await getAiResponse(
+            [
+              { role: "system", content: personality.systemPrompt },
+              { role: "user", content: prompt },
+            ],
+            personality.activeProvider as "groq" | "gemini" | "nvidia"
+          );
+          await interaction.editReply(`🔥 **ROAST BATTLE** 🔥\n<@${user.id}> **vs** <@${opponent.id}>\n\n${reply}`);
+        } catch {
+          await interaction.editReply("Yaar AI thoda busy hai abhi! Thodi der baad try karo.");
         }
         return;
       }

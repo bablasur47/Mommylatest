@@ -110,6 +110,7 @@ router.get("/servers/:guildId/config", requireAuth, async (req, res): Promise<vo
     pingChannelId: server.pingChannelId ?? "",
     prefix: server.prefix ?? "!",
     aiEnabled: server.aiEnabled,
+    customPrompt: server.customPrompt ?? "",
   });
 });
 
@@ -121,12 +122,13 @@ router.patch("/servers/:guildId/config", requireAuth, async (req, res): Promise<
     return;
   }
 
-  const { welcomeEnabled, welcomeChannelId, pingChannelId, prefix, aiEnabled } = req.body as {
+  const { welcomeEnabled, welcomeChannelId, pingChannelId, prefix, aiEnabled, customPrompt } = req.body as {
     welcomeEnabled?: boolean;
     welcomeChannelId?: string;
     pingChannelId?: string;
     prefix?: string;
     aiEnabled?: boolean;
+    customPrompt?: string;
   };
 
   const update: Record<string, unknown> = {};
@@ -135,6 +137,7 @@ router.patch("/servers/:guildId/config", requireAuth, async (req, res): Promise<
   if (typeof pingChannelId === "string") update.pingChannelId = pingChannelId || null;
   if (typeof prefix === "string" && prefix.trim()) update.prefix = prefix.trim();
   if (typeof aiEnabled === "boolean") update.aiEnabled = aiEnabled;
+  if (typeof customPrompt === "string") update.customPrompt = customPrompt.trim() || null;
 
   const server = await ServerConfig.findOneAndUpdate(
     { guildId: params.data.guildId },
@@ -153,6 +156,7 @@ router.patch("/servers/:guildId/config", requireAuth, async (req, res): Promise<
     pingChannelId: server.pingChannelId ?? "",
     prefix: server.prefix ?? "!",
     aiEnabled: server.aiEnabled,
+    customPrompt: server.customPrompt ?? "",
   });
 });
 

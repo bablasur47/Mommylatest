@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ApiKey } from "./models";
+import { ApiKey, KeyUsageLog } from "./models";
 import { logger } from "./logger";
 
 export interface AiMessage {
@@ -164,10 +164,12 @@ export async function getAiResponse(
         const result = await callFns[provider](keyDoc.key, messages);
         // Mark successful use
         await ApiKey.findByIdAndUpdate(keyDoc._id, { lastUsed: new Date() });
+        KeyUsageLog.create({ provider, success: true, timestamp: new Date() }).catch(() => {});
         return result;
       } catch (err) {
         logger.warn({ err, provider, keyId: keyDoc._id }, "API key failed, trying next");
         await ApiKey.findByIdAndUpdate(keyDoc._id, { $inc: { errorCount: 1 } });
+        KeyUsageLog.create({ provider, success: false, timestamp: new Date() }).catch(() => {});
       }
     }
   }

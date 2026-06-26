@@ -104,6 +104,7 @@ export interface IServerConfig extends Document {
   counterMessageId?: string;    // the pinned message ID being updated every 30s
   aiEnabled: boolean;           // whether Priya responds to AI chat (default true)
   aiDisabledChannels: string[]; // channels where AI is explicitly turned off
+  customPrompt?: string;        // extra instructions appended to system prompt for this server
 }
 
 const ServerConfigSchema = new Schema<IServerConfig>(
@@ -123,6 +124,7 @@ const ServerConfigSchema = new Schema<IServerConfig>(
     counterMessageId: { type: String, default: null },
     aiEnabled: { type: Boolean, default: true },
     aiDisabledChannels: { type: [String], default: [] },
+    customPrompt: { type: String, default: null },
   },
   { timestamps: true }
 );
@@ -188,6 +190,44 @@ const PersonalitySchema = new Schema<IPersonality>({
 export const Personality =
   mongoose.models.Personality ||
   mongoose.model<IPersonality>("Personality", PersonalitySchema);
+
+// ─── Key Usage Log ────────────────────────────────────────────────────────────
+
+export interface IKeyUsageLog extends Document {
+  provider: "groq" | "gemini" | "nvidia";
+  success: boolean;
+  timestamp: Date;
+}
+
+const KeyUsageLogSchema = new Schema<IKeyUsageLog>({
+  provider: { type: String, enum: ["groq", "gemini", "nvidia"], required: true },
+  success: { type: Boolean, required: true },
+  timestamp: { type: Date, default: () => new Date(), index: true },
+});
+
+export const KeyUsageLog =
+  mongoose.models.KeyUsageLog ||
+  mongoose.model<IKeyUsageLog>("KeyUsageLog", KeyUsageLogSchema);
+
+// ─── User Memory Tags ─────────────────────────────────────────────────────────
+
+export interface IUserMemory extends Document {
+  userId: string;
+  guildId: string;
+  memories: string[];
+}
+
+const UserMemorySchema = new Schema<IUserMemory>({
+  userId: { type: String, required: true, index: true },
+  guildId: { type: String, required: true, index: true },
+  memories: { type: [String], default: [] },
+});
+
+UserMemorySchema.index({ userId: 1, guildId: 1 }, { unique: true });
+
+export const UserMemory =
+  mongoose.models.UserMemory ||
+  mongoose.model<IUserMemory>("UserMemory", UserMemorySchema);
 
 // ─── User Relationships (marry / adopt / family) ──────────────────────────────
 

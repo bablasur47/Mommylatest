@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Server, Users, MessageSquare, Clock, Hash, ShieldAlert, Settings, Save, Bot, Volume2, Zap } from "lucide-react";
+import { ChevronLeft, Server, Users, MessageSquare, Clock, Hash, ShieldAlert, Settings, Save, Bot, Volume2, Zap, BookOpen } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
 interface ServerConfig {
@@ -17,6 +18,7 @@ interface ServerConfig {
   pingChannelId: string;
   prefix: string;
   aiEnabled: boolean;
+  customPrompt: string;
 }
 
 export function ServerDetail() {
@@ -32,6 +34,7 @@ export function ServerDetail() {
     pingChannelId: "",
     prefix: "!",
     aiEnabled: true,
+    customPrompt: "",
   });
   const [configLoading, setConfigLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,6 +53,7 @@ export function ServerDetail() {
           pingChannelId: d.pingChannelId ?? "",
           prefix: d.prefix ?? "!",
           aiEnabled: d.aiEnabled ?? true,
+          customPrompt: d.customPrompt ?? "",
         });
       })
       .catch(() => {})
@@ -248,6 +252,26 @@ export function ServerDetail() {
                   className="bg-background/50 border-border/60 rounded-xl text-sm w-20 text-center font-mono"
                   maxLength={5}
                 />
+              </div>
+
+              {/* Custom server prompt */}
+              <div className="p-4 rounded-xl bg-background/40 border border-border/50 space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                  Custom Server Instructions
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Extra instructions mommy follows only in this server — e.g. "Always speak formally" or "Never discuss competitors"
+                </p>
+                <Textarea
+                  placeholder="e.g. Is server mein hamesha formal reh aur sirf tech topics pe baat kar..."
+                  value={config.customPrompt}
+                  onChange={(e) => setConfig((c) => ({ ...c, customPrompt: e.target.value }))}
+                  className="bg-background/50 border-border/60 rounded-xl text-sm resize-none"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground text-right">{config.customPrompt.length}/500</p>
               </div>
 
               <div className="flex justify-end pt-1">

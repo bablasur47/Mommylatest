@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { requireAuth } from "../lib/auth";
-import { ApiKey } from "../lib/models";
+import { ApiKey, KeyUsageLog } from "../lib/models";
 import { AddApiBody, DeleteApiParams, UpdateApiParams, UpdateApiBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -101,6 +101,40 @@ router.patch("/apis/:apiId", requireAuth, async (req, res): Promise<void> => {
     lastUsed: key.lastUsed?.toISOString() ?? null,
     errorCount: key.errorCount,
   });
+});
+
+router.get("/apis/usage", requireAuth, async (_req, res): Promise<void> => {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [daily, totals] = await Promise.all([
+    KeyUsageLog.aggregate([
+      { $match: { timestamp: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: {
+            provider: "$provider",
+            day: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+          },
+          total: { $sum: 1 },
+          success: { $sum: { $cond: ["$success", 1, 0] } },
+        },
+      },
+      { $sort: { "_id.day": 1 } },
+    ]),
+    KeyUsageLog.aggregate([
+      { $match: { timestamp: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: "$provider",
+          total: { $sum: 1 },
+          success: { $sum: { $cond: ["$success", 1, 0] } },
+          failed: { $sum: { $cond: ["$success", 0, 1] } },
+        },
+      },
+    ]),
+  ]);
+
+  res.json({ daily, totals });
 });
 
 export default router;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useGetApis,
   useAddApi,
@@ -7,21 +7,104 @@ import {
   getGetApisQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Key, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Key, AlertCircle, CheckCircle, BarChart3 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+interface UsageTotals { _id: string; total: number; success: number; failed: number; }
+
+function useApiUsage() {
+  const [data, setData] = useState<UsageTotals[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("dashboard_token");
+    fetch("/api/apis/usage", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((r) => r.json())
+      .then((d) => setData(d.totals ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { data, loading };
+}
+
+const PROVIDER_BAR_COLORS: Record<string, string> = {
+  groq: "bg-orange-500",
+  gemini: "bg-blue-500",
+  nvidia: "bg-green-500",
+};
 
 const PROVIDER_COLORS: Record<string, string> = {
   groq: "text-orange-400 border-orange-400/30 bg-orange-400/10",
   gemini: "text-blue-400 border-blue-400/30 bg-blue-400/10",
   nvidia: "text-green-400 border-green-400/30 bg-green-400/10",
 };
+
+function UsageChart() {
+  const { data, loading } = useApiUsage();
+  const maxTotal = Math.max(...data.map((d) => d.total), 1);
+
+  return (
+    <Card className="bg-card/40 border-border/60">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-primary" />
+          <CardTitle className="text-base">Provider Usage (Last 7 Days)</CardTitle>
+        </div>
+        <CardDescription className="text-xs">Successful AI calls per provider</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {["groq", "gemini", "nvidia"].map((p) => <Skeleton key={p} className="h-10 w-full rounded-lg" />)}
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            No usage data yet — usage will appear after the bot makes AI calls.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {(["groq", "gemini", "nvidia"] as const).map((provider) => {
+              const entry = data.find((d) => d._id === provider);
+              const total = entry?.total ?? 0;
+              const success = entry?.success ?? 0;
+              const failed = entry?.failed ?? 0;
+              const pct = Math.round((total / maxTotal) * 100);
+              return (
+                <div key={provider} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={`font-semibold uppercase tracking-wide ${
+                      provider === "groq" ? "text-orange-400" :
+                      provider === "gemini" ? "text-blue-400" : "text-green-400"
+                    }`}>{provider}</span>
+                    <span className="text-muted-foreground">
+                      {total > 0 ? `${success} ok · ${failed} err · ${total} total` : "No calls"}
+                    </span>
+                  </div>
+                  <div className="h-6 w-full rounded-lg bg-muted/40 overflow-hidden">
+                    <div
+                      className={`h-full rounded-lg transition-all duration-700 ${PROVIDER_BAR_COLORS[provider]}`}
+                      style={{ width: `${pct}%`, opacity: total > 0 ? 1 : 0 }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export function ApiKeys() {
   const { data: apis, isLoading } = useGetApis();
@@ -78,6 +161,8 @@ export function ApiKeys() {
           Add Key
         </Button>
       </div>
+
+      <UsageChart />
 
       {showForm && (
         <Card className="bg-card/50 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
